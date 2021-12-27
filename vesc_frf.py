@@ -99,7 +99,8 @@ def plot_all_data(data_filename, title):
 
 def plot_plant(data_directory, R=100E-3, L=100E-6,
                plot_mag=True, plot_phase=True,
-               f_min=1E0, f_max=25E3):
+               f_min=1E0, f_max=25E3, plot_show=True, ax=None,
+               plot_sim=True, title=None, mag_label=None):
     data_filenames = get_file_list(data_directory)
     num_files = len(data_filenames)
     avg_ID_by_R = np.zeros(1023, dtype='complex')
@@ -128,17 +129,23 @@ def plot_plant(data_directory, R=100E-3, L=100E-6,
     simulated_plant = 1 / (R + 1j * omega * L)
 
     if plot_mag:
-        fig, ax = plt.subplots()
-        ax.set_title('Plant with Q injection')
+        if plot_show:
+            fig, ax = plt.subplots()
+        ax.set_title(title)
         ax.set_xlim([1, f_max])
-        ax.set_ylim([-60, 30])
-        plot_mag_ax(f, np.abs(avg_IQ_by_R), ax, label='measured')
-        plot_mag_ax(f_sim, np.abs(simulated_plant), ax, label='simulation')
-        plt.show()
+        ax.set_ylim([-50, 30])
+        plot_mag_ax(f, np.abs(avg_IQ_by_R), ax, label=mag_label)
+        if plot_sim:
+            plot_mag_ax(f_sim, np.abs(simulated_plant), ax, label='simulation')
+        if plot_show == True:
+            plt.show()
 
     if plot_phase:
-        fig, ax = plt.subplots()
+        if plot_show:
+            fig, ax = plt.subplots()
         ax.set_title('Phase')
         plot_phase_ax(f, np.angle(avg_IQ_by_R), ax, label='measured')
-        plot_phase_ax(f_sim, np.angle(simulated_plant), ax, label='simulation')
-        plt.show()
+        if plot_sim:
+            plot_phase_ax(f_sim, np.angle(simulated_plant), ax, label='simulation')
+        if plot_show == True:
+            plt.show()
