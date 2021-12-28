@@ -26,8 +26,8 @@ def plot_mag_ax(f, mag, ax, label, alpha=1.0):
     ax.set_xlabel('Frequency [Hz]')
     ax.legend()
 
-def plot_phase_ax(f, phase, ax, label):
-    ax.semilogx(f, phase * 180 / np.pi, label=label)
+def plot_phase_ax(f, phase, ax, label, alpha=1.0):
+    ax.semilogx(f, phase * 180 / np.pi, label=label, alpha=alpha)
     ax.grid( 1 , 'both')
     ax.set_xlabel('Frequency [Hz]')
     ax.set_ylabel('Phase [deg]')
@@ -102,11 +102,13 @@ def plot_all_data(data_filename, title):
 def plot_plant(data_directory, R=100E-3, L=100E-6,
                plot_mag=True, plot_phase=True,
                f_min=1E0, f_max=25E3, plot_show=True, ax=None,
-               plot_sim=True, title=None, mag_label=None, alpha=1.0):
+               plot_sim=True, title=None, mag_label=None, alpha=1.0, voltage_disturbance=1):
     data_filenames = get_file_list(data_directory)
     num_files = len(data_filenames)
     avg_ID_by_R = np.zeros(1023, dtype='complex')
     avg_IQ_by_R = np.zeros(1023, dtype='complex')
+
+    # TODO: properly deal with D and Q axis
 
     for data_file in data_filenames:
 
@@ -121,7 +123,7 @@ def plot_plant(data_directory, R=100E-3, L=100E-6,
         ID, f = getFFT(Id, dt)
         IQ, f = getFFT(Iq, dt)
 
-        response, dist, dt = read_response_dist(data_file, 1)
+        response, dist, dt = read_response_dist(data_file, voltage_disturbance)
         RESPONSE, f = getFFT(response, dt)
 
         avg_IQ_by_R += IQ / RESPONSE / num_files
@@ -145,7 +147,7 @@ def plot_plant(data_directory, R=100E-3, L=100E-6,
     if plot_phase:
         if plot_show:
             fig, ax = plt.subplots()
-        ax.set_title('Phase')
+        ax.set_title(title)
         plot_phase_ax(f, np.angle(avg_IQ_by_R), ax, label='measured')
         if plot_sim:
             plot_phase_ax(f_sim, np.angle(simulated_plant), ax, label='simulation')
