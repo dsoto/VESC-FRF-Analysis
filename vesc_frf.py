@@ -67,6 +67,8 @@ def data_report(data_filenames):
             print('PRBS non-zero mean error', dist.mean())
         if len(df) < 2047:
             print('truncated file error', len(df))
+        if dist.std() < 0.99:
+            print('low std dev for disturbance', dist.std())
 
 def plot_all_data(data_filename, title):
     df = pd.read_csv(data_filename, sep=';')
