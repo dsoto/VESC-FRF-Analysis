@@ -153,3 +153,43 @@ def plot_plant(data_directory, R=100E-3, L=100E-6,
             plot_phase_ax(f_sim, np.angle(simulated_plant), ax, label='simulation')
         if plot_show == True:
             plt.show()
+
+def plot_open_loop(data_directory, R=100E-3, L=100E-6,
+               plot_mag=True, plot_phase=True,
+               f_min=1E0, f_max=25E3, plot_show=True, ax=None,
+               plot_sim=True, title=None, mag_label=None, phase_label=None,
+               alpha=1.0, voltage_disturbance=1):
+
+    data_filenames = get_file_list(data_directory)
+    num_files = len(data_filenames)
+    SENSITIVITY = np.zeros(1023, dtype='complex')
+
+    for data_file in data_filenames:
+
+        response, dist, dt = read_response_dist(data_file, voltage_disturbance)
+        RESPONSE, f = getFFT(response, dt)
+        DIST, f = getFFT(dist, dt)
+
+        SENSITIVITY += RESPONSE / DIST / num_files
+
+    OPEN_LOOP = 1 / SENSITIVITY - 1
+
+    if plot_mag:
+        if plot_show:
+            fig, ax = plt.subplots()
+        ax.set_title(title)
+        # TODO: no magic numbers
+        ax.set_xlim([1, f_max])
+        # TODO: no magic numbers
+        ax.set_ylim([-50, 30])
+        plot_mag_ax(f, np.abs(OPEN_LOOP), ax, label=mag_label, alpha=alpha)
+        if plot_show == True:
+            plt.show()
+
+    if plot_phase:
+        if plot_show:
+            fig, ax = plt.subplots()
+        ax.set_title(title)
+        plot_phase_ax(f, np.angle(OPEN_LOOP), ax, label=phase_label, alpha=alpha)
+        if plot_show == True:
+            plt.show()
